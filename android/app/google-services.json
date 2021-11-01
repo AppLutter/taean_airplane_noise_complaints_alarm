@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "615070074799",
+    "project_id": "taeancomplaint",
+    "storage_bucket": "taeancomplaint.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:615070074799:android:c7fcc9374a155954f0d15a",
+        "android_client_info": {
+          "package_name": "com.rollcake.taeancomplaints"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "615070074799-5iuqm9u4apcm9j48v915te59jbe3mo5b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8GDUi7JEuctomDL8_IIdJyY8PtC9Bfrs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "615070074799-5iuqm9u4apcm9j48v915te59jbe3mo5b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
