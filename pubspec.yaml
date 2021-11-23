@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.15.0-116.0.dev <3.0.0"
+  sdk: ">=2.14.0-116.0.dev <3.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -43,6 +43,10 @@ dependencies:
   intl: ^0.17.0
   flutter_screen_lock: ^4.0.4+2
   firebase_database: ^8.0.1
+  firebase_messaging: ^10.0.9
+  flutter_local_notifications: ^9.0.2
+  firebase_auth: ^3.2.0
+  geocoding: ^2.0.1
 
 
 dev_dependencies:
@@ -82,11 +86,10 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
+  fonts:
+    - family: yaNolJa
+      fonts:
+        - asset: fonts/yaNolJa.ttf
   #         style: italic
   #   - family: Trajan Pro
   #     fonts:

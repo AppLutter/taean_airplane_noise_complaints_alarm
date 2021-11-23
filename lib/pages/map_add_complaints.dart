@@ -1,55 +1,44 @@
-import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:taeancomplaints/data/constants.dart';
+
+import 'package:taeancomplaints/data/constants_and_statics.dart';
 import 'package:taeancomplaints/Services/location_services.dart';
+
+import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:google_api_headers/google_api_headers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:taeancomplaints/data_model.dart';
+
 import 'package:intl/intl.dart';
-import 'package:taeancomplaints/data/static.dart';
-import 'package:firebase_database/firebase_database.dart';
+
 import 'dart:math';
+import 'dart:async';
+
+CameraPosition initialCameraPosition = CameraPosition(
+  target: LatLng(36.5943, 126.2941),
+  zoom: 10.0,
+);
+
+LatLng currentLocation = initialCameraPosition.target;
 
 class MapAddComplaints extends StatefulWidget {
+  const MapAddComplaints({Key? key}) : super(key: key);
+
   @override
   _MapAddComplaintsState createState() => _MapAddComplaintsState();
 }
 
 class _MapAddComplaintsState extends State<MapAddComplaints> {
+  final database = FirebaseDatabase.instance.reference();
+
   Completer<GoogleMapController> _controller = Completer();
-
-  Timer? _timer;
-  int _counter = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(Duration(seconds: 5), (Timer t) => addValue());
-  }
-
-  void addValue() {
-    setState(() {
-      _counter++;
-    });
-  }
-
   bool _visible = true;
   bool isLoading = false;
-  Map<String, DataModel> responseData = {};
-  final database = FirebaseDatabase.instance.reference();
   int number = 0;
-
-  static final CameraPosition _initialCameraPosition1 = CameraPosition(
-    target: LatLng(36.5943, 126.2941),
-    zoom: 10.0,
-  );
-
-  LatLng currentLocation = _initialCameraPosition1.target;
+  String? token;
 
   @override
   Widget build(BuildContext context) {
@@ -57,12 +46,12 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
       stream: FirebaseFirestore.instance.collection('taean_data').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (!snapshot.hasData) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         } else {
           markers.clear(); //일단 데이터 변화가 있으면 마커 초기화
 
           for (var doc in snapshot.data!.docs) {
-            if (doc['minute'] == DateFormat('mm').format(DateTime.now())) {
+            if (doc['day'] == DateFormat('d').format(DateTime.now())) {
               Marker newMarker = Marker(
                 markerId: MarkerId(Random().nextInt(50000).toString()),
                 icon: BitmapDescriptor.defaultMarker,
@@ -85,30 +74,31 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
           appBar: AppBar(
             backgroundColor: Colors.indigo,
             centerTitle: true,
-            title: const Text(
-              '민원 지역 검색',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            title: Text(
+              currentBottomBarIndex == 0 ? '민원 지도' : '민원 지역 추가',
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             actions: [
-              IconButton(
-                onPressed: _showSearchDialog,
-                icon: const Icon(Icons.search),
+              Visibility(
+                visible: currentBottomBarIndex == 1 ? true : false,
+                child: IconButton(
+                  onPressed: _showSearchDialog,
+                  icon: const Icon(Icons.search),
+                ),
               )
             ],
           ),
           body: Stack(
             alignment: Alignment.center,
             children: [
-              Container(
-                child: GoogleMap(
-                  initialCameraPosition: _initialCameraPosition1,
-                  mapType: MapType.normal,
-                  onMapCreated: (controller) {
-                    _controller.complete(controller);
-                  },
-                  onCameraMove: (e) => currentLocation = e.target,
-                  markers: markers,
-                ),
+              GoogleMap(
+                initialCameraPosition: initialCameraPosition,
+                mapType: MapType.normal,
+                onMapCreated: (controller) {
+                  _controller.complete(controller);
+                },
+                onCameraMove: (e) => currentLocation = e.target,
+                markers: markers,
               ),
               Visibility(
                 visible: _visible,
@@ -125,7 +115,7 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
           floatingActionButton: Padding(
@@ -133,12 +123,16 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                FloatingActionButton(
-                  heroTag: 'setup_btn1',
-                  onPressed: () {
-                    _setMarker();
-                  },
-                  child: const Icon(Icons.location_on),
+                Visibility(
+                  visible: markerVisible == 1 ? true : false,
+                  child: FloatingActionButton(
+                    heroTag: 'setup_btn1',
+                    onPressed: () {
+                      _setMarker();
+                      markerVisible = 0;
+                    },
+                    child: const Icon(Icons.location_on),
+                  ),
                 ),
                 const SizedBox(
                   height: 5,
@@ -175,11 +169,12 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
         'lat': currentLocation.latitude.toStringAsFixed(6),
         'lon': currentLocation.longitude.toStringAsFixed(6),
         'time': DateFormat('kk시 mm분').format(DateTime.now()),
+        'year': DateFormat('yyyy').format(DateTime.now()),
         'month': DateFormat('M').format(DateTime.now()),
         'day': DateFormat('d').format(DateTime.now()),
-        'year': DateFormat('yy').format(DateTime.now()),
-        'date': DateFormat('yyyy.MM.dd').format(DateTime.now()),
-        'minute': DateFormat('mm').format(DateTime.now())
+        'hour': DateFormat('k').format(DateTime.now()),
+        'date': DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        'weekday': DateFormat('EE').format(DateTime.now())
       },
     );
 
@@ -189,7 +184,7 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
         .then((QuerySnapshot querySnapshot) {
       markers.clear();
       for (var doc in querySnapshot.docs) {
-        if (doc['minute'] == DateFormat('mm').format(DateTime.now())) {
+        if (doc['day'] == DateFormat('d').format(DateTime.now())) {
           Marker newMarker = Marker(
             markerId: MarkerId(Random().nextInt(50000).toString()),
             icon: BitmapDescriptor.defaultMarker,
@@ -222,17 +217,17 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
         types: [],
         strictbounds: false,
         components: [Component(Component.country, "kr")]);
-    _getLocationFromPlaceId(p!.placeId!);
+    getLocationFromPlaceId(p!.placeId!);
   }
 
-  Future<void> _getLocationFromPlaceId(String placeId) async {
-    GoogleMapsPlaces _places = GoogleMapsPlaces(
+  Future<void> getLocationFromPlaceId(String placeId) async {
+    GoogleMapsPlaces places = GoogleMapsPlaces(
       apiKey: Constants.apiKey,
       apiHeaders: await GoogleApiHeaders().getHeaders(),
     );
 
     PlacesDetailsResponse detail =
-        await _places.getDetailsByPlaceId(placeId, language: 'ko');
+        await places.getDetailsByPlaceId(placeId, language: 'ko');
     splitResult = detail.result.formattedAddress!.split(' ');
     processingResult = splitResult.sublist(2);
     addressResult = processingResult.join(' ');
@@ -252,6 +247,12 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
       target: _location,
       zoom: 10.50,
     );
-    controller.animateCamera(CameraUpdate.newCameraPosition(_cameraPosition));
+    controller
+        .animateCamera(CameraUpdate.newCameraPosition(_cameraPosition))
+        .then((_) {
+      setState(() {
+        markerVisible = 1;
+      });
+    });
   }
 }

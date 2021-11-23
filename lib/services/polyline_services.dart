@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:taeancomplaints/Data/constants.dart';
+import 'package:taeancomplaints/Data/constants_and_statics.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:math' show cos, sqrt, asin;
 
@@ -37,8 +37,6 @@ class PolylineService {
         polylineCoordinates[i + 1].longitude,
       );
     }
-
-    print("distance = ${totalDistance.toStringAsFixed(2)} km");
   }
 
   double _coordinateDistance(lat1, lon1, lat2, lon2) {
