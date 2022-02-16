@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:google_maps_webservice/places.dart';
 import 'package:intl/intl.dart';
-import 'package:geocoding/geocoding.dart';
 
 import 'package:taeancomplaints/data/constants_and_statics.dart';
 import 'package:taeancomplaints/pages/time_pick.dart';
-import 'package:taeancomplaints/pages/map_add_complaints.dart';
-import 'package:flutter_google_places/flutter_google_places.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 String chooseDate = ' ';
 String timeChoose = ' ';
@@ -21,6 +19,7 @@ class ComplaintsAnalysis extends StatefulWidget {
 }
 
 class _ComplaintsAnalysisState extends State<ComplaintsAnalysis> {
+  late FirebaseMessaging messaging;
   TextEditingController timeController = TextEditingController();
   String? loadDataString = ' ';
 
@@ -91,7 +90,7 @@ class _ComplaintsAnalysisState extends State<ComplaintsAnalysis> {
   }
 
   @override
-  Widget build(BuildContext context123) {
+  Widget build(BuildContext context) {
     return StreamBuilder(
       stream: FirebaseFirestore.instance.collection('taean_data').snapshots(),
       builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -128,7 +127,7 @@ class _ComplaintsAnalysisState extends State<ComplaintsAnalysis> {
                           borderRadius: BorderRadius.circular(10.0),
                         ),
                         context: context,
-                        backgroundColor: Colors.orangeAccent,
+                        backgroundColor: const Color(0xFFACFFEF),
                         builder: (context) {
                           return ListView.separated(
                             itemBuilder: (BuildContext context, int index) {
@@ -210,7 +209,17 @@ class _ComplaintsAnalysisState extends State<ComplaintsAnalysis> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 const SizedBox(
-                                  height: 150,
+                                  height: 50,
+                                ),
+                                const Text(
+                                  '주소 검색',
+                                  style: TextStyle(
+                                    fontSize: 35.0,
+                                    color: Colors.blue,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 50,
                                 ),
                                 GestureDetector(
                                   onTap: showSearchDialog,
@@ -367,8 +376,8 @@ class _ComplaintsAnalysisState extends State<ComplaintsAnalysis> {
               backgroundColor: Colors.indigo,
               centerTitle: true,
               title: const Text(
-                '민원 분석 페이지',
-                style: TextStyle(fontSize: 35.0),
+                '분석 페이지',
+                style: TextStyle(fontSize: 30.0),
               ),
             ),
             body: Center(

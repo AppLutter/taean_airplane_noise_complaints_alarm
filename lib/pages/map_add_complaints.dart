@@ -33,8 +33,8 @@ class MapAddComplaints extends StatefulWidget {
 
 class _MapAddComplaintsState extends State<MapAddComplaints> {
   final database = FirebaseDatabase.instance.reference();
+  final Completer<GoogleMapController> _controller = Completer();
 
-  Completer<GoogleMapController> _controller = Completer();
   bool _visible = true;
   bool isLoading = false;
   int number = 0;
@@ -76,16 +76,20 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
             centerTitle: true,
             title: Text(
               currentBottomBarIndex == 0 ? '민원 지도' : '민원 지역 추가',
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             actions: [
               Visibility(
                 visible: currentBottomBarIndex == 1 ? true : false,
                 child: IconButton(
                   onPressed: _showSearchDialog,
-                  icon: const Icon(Icons.search),
+                  icon: const Icon(
+                    Icons.search,
+                  ),
                 ),
-              )
+              ),
             ],
           ),
           body: Stack(
@@ -178,30 +182,29 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
       },
     );
 
-    FirebaseFirestore.instance
-        .collection('taean_data')
-        .get()
-        .then((QuerySnapshot querySnapshot) {
-      markers.clear();
-      for (var doc in querySnapshot.docs) {
-        if (doc['day'] == DateFormat('d').format(DateTime.now())) {
-          Marker newMarker = Marker(
-            markerId: MarkerId(Random().nextInt(50000).toString()),
-            icon: BitmapDescriptor.defaultMarker,
-            // icon: _locationIcon,
-            position: LatLng(
-              double.parse(doc['lat']),
-              double.parse(doc['lon']),
-            ),
-            infoWindow: InfoWindow(
-              title: doc['address'],
-              snippet: "${doc['time']} 발생",
-            ),
-          );
-          markers.add(newMarker);
+    FirebaseFirestore.instance.collection('taean_data').get().then(
+      (QuerySnapshot querySnapshot) {
+        markers.clear();
+        for (var doc in querySnapshot.docs) {
+          if (doc['day'] == DateFormat('d').format(DateTime.now())) {
+            Marker newMarker = Marker(
+              markerId: MarkerId(Random().nextInt(50000).toString()),
+              icon: BitmapDescriptor.defaultMarker,
+              // icon: _locationIcon,
+              position: LatLng(
+                double.parse(doc['lat']),
+                double.parse(doc['lon']),
+              ),
+              infoWindow: InfoWindow(
+                title: doc['address'],
+                snippet: "${doc['time']} 발생",
+              ),
+            );
+            markers.add(newMarker);
+          }
         }
-      }
-    });
+      },
+    );
   }
 
   Future<void> _showSearchDialog() async {
@@ -232,8 +235,12 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
     processingResult = splitResult.sublist(2);
     addressResult = processingResult.join(' ');
 
-    _animateCamera(LatLng(detail.result.geometry!.location.lat,
-        detail.result.geometry!.location.lng));
+    _animateCamera(
+      LatLng(
+        detail.result.geometry!.location.lat,
+        detail.result.geometry!.location.lng,
+      ),
+    );
   }
 
   Future<void> _getMyLocation() async {
@@ -248,11 +255,17 @@ class _MapAddComplaintsState extends State<MapAddComplaints> {
       zoom: 10.50,
     );
     controller
-        .animateCamera(CameraUpdate.newCameraPosition(_cameraPosition))
-        .then((_) {
-      setState(() {
-        markerVisible = 1;
-      });
-    });
+        .animateCamera(
+      CameraUpdate.newCameraPosition(_cameraPosition),
+    )
+        .then(
+      (_) {
+        setState(
+          () {
+            markerVisible = 1;
+          },
+        );
+      },
+    );
   }
 }
