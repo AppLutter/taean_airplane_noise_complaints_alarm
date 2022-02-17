@@ -2,7 +2,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 
 class Constants {
-  //TODO: PLACE YOUR API-KEY
   static const String apiKey = "AIzaSyC4-fUqKaZTLr2jomeIUcS1AdsghCRdnJA";
 }
 
